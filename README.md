@@ -22,6 +22,7 @@ entrada e tratamento padronizado de erros, conforme detalhado nas seções segui
 
 A aplicação foi construída em Java 21, utilizando o framework Spring Boot, e organizada em camadas com
 responsabilidades bem definidas, conforme ilustrado na Figura 1.
+
 <img width="775" height="171" alt="image" src="https://github.com/user-attachments/assets/14dc2ac2-e3b1-4592-882f-882c443350c1" />
 
 Figura 1 — Fluxo de uma requisição através das camadas da aplicação
@@ -58,6 +59,7 @@ aplicação, retornando respostas padronizadas em JSON.
 ## 3. Modelagem de Dados
 O modelo de dados é composto por três entidades principais — Campeonato, Time e Jogador —
 relacionadas conforme o diagrama simplificado abaixo (Figura 2).
+
 <img width="732" height="576" alt="image" src="https://github.com/user-attachments/assets/17fa9a4f-2f6a-45e2-a8ec-204a085de82b" />
 
 ### 3.1 Entidade Campeonato
@@ -92,6 +94,11 @@ entidade Time e @ManyToOne na entidade Jogador, que mantém a chave estrangeira 
 
 ### 5.3 Jogadores — /api/jogadores
 <img width="766" height="231" alt="image" src="https://github.com/user-attachments/assets/2aefb929-c193-4103-a8eb-43a473e86a1e" />
+
+### 5.4 Tratamento de erros
+Todas as respostas de erro seguem um formato padronizado, retornado pelo GlobalExceptionHandler:
+<img width="767" height="302" alt="image" src="https://github.com/user-attachments/assets/564f877d-818b-4de2-bf1a-fbc84c540bdb" />
+
 
 
 
