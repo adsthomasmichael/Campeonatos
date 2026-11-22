@@ -4,17 +4,20 @@ import com.implemntacaoSw.Campeonatos.dto.campeonato.CampeonatoResumoDTO;
 import com.implemntacaoSw.Campeonatos.dto.jogador.JogadorResumoDTO;
 import com.implemntacaoSw.Campeonatos.dto.time.TimeRequestDTO;
 import com.implemntacaoSw.Campeonatos.dto.time.TimeResponseDTO;
+import com.implemntacaoSw.Campeonatos.entity.Campeonato;
 import com.implemntacaoSw.Campeonatos.entity.Time;
+import com.implemntacaoSw.Campeonatos.exception.BusinessException;
 import com.implemntacaoSw.Campeonatos.exception.ResourceNotFoundException;
 import com.implemntacaoSw.Campeonatos.repository.TimeRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 @Service
+@Transactional
 public class TimeService {
 
     private final TimeRepository timeRepository;
@@ -76,6 +79,9 @@ public class TimeService {
     }
 
     public TimeResponseDTO criar(TimeRequestDTO dto) {
+        if (timeRepository.existsByNomeIgnoreCase(dto.nome().trim())) {
+            throw new BusinessException("Já existe um time com o nome '" + dto.nome().trim() + "'");
+        }
         Time time = new Time();
         aplicarDados(time, dto);
         return toResponseDTO(timeRepository.save(time));
@@ -83,12 +89,26 @@ public class TimeService {
 
     public TimeResponseDTO atualizar(Long id, TimeRequestDTO dto) {
         Time time = buscarEntidadePorId(id);
+        if (timeRepository.existsByNomeIgnoreCaseAndIdNot(dto.nome().trim(), id)) {
+            throw new BusinessException("Já existe outro time com o nome '" + dto.nome().trim() + "'");
+        }
         aplicarDados(time, dto);
         return toResponseDTO(timeRepository.save(time));
     }
 
+    /**
+     * Remove o time (e seus jogadores). Se ele participar de campeonatos, os
+     * vínculos são desfeitos antes: o lado "dono" da relação N:N é o Campeonato,
+     * então sem isso o banco recusaria a exclusão (chave estrangeira).
+     */
     public void deletar(Long id) {
         Time time = buscarEntidadePorId(id);
+
+        for (Campeonato campeonato : new ArrayList<>(time.getCampeonatos())) {
+            campeonato.getTimes().remove(time);
+        }
+        time.getCampeonatos().clear();
+
         timeRepository.delete(time);
     }
 
@@ -98,7 +118,7 @@ public class TimeService {
     }
 
     private void aplicarDados(Time time, TimeRequestDTO dto) {
-        time.setNome(dto.nome());
+        time.setNome(dto.nome().trim());
         time.setCidade(dto.cidade());
         time.setEstado(dto.estado());
         time.setAnoFundacao(dto.anoFundacao());

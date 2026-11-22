@@ -2,7 +2,6 @@ package com.implemntacaoSw.Campeonatos.controller;
 
 import com.implemntacaoSw.Campeonatos.dto.jogador.JogadorRequestDTO;
 import com.implemntacaoSw.Campeonatos.dto.jogador.JogadorResponseDTO;
-import com.implemntacaoSw.Campeonatos.entity.Jogador;
 import com.implemntacaoSw.Campeonatos.service.JogadorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,7 +22,7 @@ public class JogadorController {
     public JogadorController(JogadorService jogadorService){ this.jogadorService = jogadorService;}
 
     @GetMapping
-    @Operation(summary = "Busca um jogados pelo id")
+    @Operation(summary = "Lista todos os jogadores")
     public ResponseEntity<List<JogadorResponseDTO>> listarTodos(){
         return ResponseEntity.ok(jogadorService.listarTodos());
     }

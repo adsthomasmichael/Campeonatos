@@ -4,9 +4,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.List;
 
@@ -57,6 +61,35 @@ public class GlobalExceptionHandler {
         ApiError erro = ApiError.of(HttpStatus.BAD_REQUEST.value(), "Requisição inválida",
                 ex.getMessage(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiError> handleMensagemIlegivel(HttpMessageNotReadableException ex, HttpServletRequest request) {
+        ApiError erro = ApiError.of(HttpStatus.BAD_REQUEST.value(), "Corpo da requisição inválido",
+                "O JSON está malformado ou possui valores inválidos (ex.: datas fora do formato AAAA-MM-DD)",
+                request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiError> handleTipoDeParametroInvalido(MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+        ApiError erro = ApiError.of(HttpStatus.BAD_REQUEST.value(), "Parâmetro inválido",
+                "O valor informado para '" + ex.getName() + "' é inválido", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiError> handleMetodoNaoSuportado(HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
+        ApiError erro = ApiError.of(HttpStatus.METHOD_NOT_ALLOWED.value(), "Método não permitido",
+                "O método " + ex.getMethod() + " não é permitido para esta rota", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(erro);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiError> handleRotaInexistente(NoResourceFoundException ex, HttpServletRequest request) {
+        ApiError erro = ApiError.of(HttpStatus.NOT_FOUND.value(), "Rota não encontrada",
+                "Não existe nenhuma rota para " + request.getRequestURI(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erro);
     }
 
     @ExceptionHandler(Exception.class)

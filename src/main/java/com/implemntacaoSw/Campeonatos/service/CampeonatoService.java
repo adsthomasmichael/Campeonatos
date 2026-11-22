@@ -9,7 +9,6 @@ import com.implemntacaoSw.Campeonatos.exception.BusinessException;
 import com.implemntacaoSw.Campeonatos.exception.ResourceNotFoundException;
 import com.implemntacaoSw.Campeonatos.repository.CampeonatoRepository;
 import com.implemntacaoSw.Campeonatos.repository.TimeRepository;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,13 +40,15 @@ public class CampeonatoService {
     }
 
     public CampeonatoResponseDTO criar(CampeonatoRequestDTO dto) {
+        validarDatas(dto);
         Campeonato campeonato = new Campeonato();
         aplicarDados(campeonato, dto);
         return toResponseDTO(campeonatoRepository.save(campeonato));
     }
 
-    public CampeonatoResponseDTO atualizar(Long id, @Valid CampeonatoRequestDTO dto) {
+    public CampeonatoResponseDTO atualizar(Long id, CampeonatoRequestDTO dto) {
         Campeonato campeonato = buscarEntidadePorId(id);
+        validarDatas(dto);
         aplicarDados(campeonato, dto);
         return toResponseDTO(campeonatoRepository.save(campeonato));
     }
@@ -95,6 +96,13 @@ public class CampeonatoService {
     private Time buscarTimePorId(Long id) {
         return timeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Time não encontrado com id " + id));
+    }
+
+    /* A data de término, quando informada, não pode ser anterior à data de início. */
+    private void validarDatas(CampeonatoRequestDTO dto) {
+        if (dto.dataFim() != null && dto.dataFim().isBefore(dto.dataInicio())) {
+            throw new IllegalArgumentException("A data de fim não pode ser anterior à data de início");
+        }
     }
 
     private void aplicarDados(Campeonato campeonato, CampeonatoRequestDTO dto) {
